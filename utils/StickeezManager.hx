@@ -1,3 +1,5 @@
+package utils;
+
 import mobilecore.MobileCore;
 
 class StickeezManager extends haxe.Timer{

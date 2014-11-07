@@ -1,3 +1,5 @@
+package utils;
+
 class OfferwallManager {
   private var checkpointCounter : Int = 0;
 

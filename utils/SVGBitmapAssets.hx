@@ -1,4 +1,4 @@
-package;
+package utils;
 
 import flash.display.Shape;
 import flash.display.BitmapData;
