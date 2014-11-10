@@ -11,9 +11,11 @@ class StickeezManager extends haxe.Timer{
     enabled = true;
   }
   public function disable() {
-    enabled = false;
-    if (MobileCore.isStickeeShowing()) {
-      MobileCore.hideStickee();
+    if (enabled) {
+      enabled = false;
+      if (MobileCore.isStickeeShowing()) {
+        MobileCore.hideStickee();
+      }
     }
   }
 
@@ -21,6 +23,7 @@ class StickeezManager extends haxe.Timer{
   private var notShownCounter : Int = 15;
 
   public override function run() {
+    if (!enabled) return;
     if (!MobileCore.isStickeeReady()) {
       return;
     }
@@ -31,9 +34,7 @@ class StickeezManager extends haxe.Timer{
     // Stickeez ready, for how long not shown?
     notShownCounter = notShownCounter + 1;
     if (notShownCounter >= 5) {
-      if (enabled) {
-        MobileCore.showStickee();
-      }
+      MobileCore.showStickee();
       notShownCounter = 0;
     }
   }
