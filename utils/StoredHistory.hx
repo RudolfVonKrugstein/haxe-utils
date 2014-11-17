@@ -27,7 +27,6 @@ class StoredHistory<T> {
   }
 
   public function addElement(e : T, compare : T -> T -> Bool = null) {
-    trace("addElement");
     if (compare != null) {
       for (h in history) {
         if (compare(h,e)) {
