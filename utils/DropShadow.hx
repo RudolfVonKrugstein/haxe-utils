@@ -8,7 +8,7 @@ class DropShadow {
   public var corners : Float = 0.0;
   public var fill : Bool = false;
   public var innerShadow : Bool = false;
-  public var color : Int = 0;
+  public var color : UInt = 0;
   public function new() {
     rect = new flash.geom.Rectangle();
   }
