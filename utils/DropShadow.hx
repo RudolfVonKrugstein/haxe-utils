@@ -1,6 +1,5 @@
 package utils;
 
-import tink.core.Pair;
 import flash.geom.Rectangle;
 import flash.geom.Point;
 
@@ -31,20 +30,20 @@ class AAPolygon {
   }
 
   // Creates an array of the positions of the corners
-  public function createCornerPositions() : Array<Pair<Float,Float>> {
-    var result : Array<Pair<Float,Float>> = [];
-    result.push(new Pair(x_start, y_start));
+  public function createCornerPositions() : Array<Point> {
+    var result : Array<Point> = [];
+    result.push(new Point(x_start, y_start));
     for (side in sides) {
       var last = result[result.length-1];
       switch(side) {
       case UP(dist):
-        result.push(new Pair(last.a, last.b - dist));
+        result.push(new Point(last.x, last.y - dist));
       case RIGHT(dist):
-        result.push(new Pair(last.a + dist, last.b));
+        result.push(new Point(last.x + dist, last.y));
       case DOWN(dist):
-        result.push(new Pair(last.a, last.b + dist));
+        result.push(new Point(last.x, last.y + dist));
       case LEFT(dist):
-        result.push(new Pair(last.a - dist, last.b));
+        result.push(new Point(last.x - dist, last.y));
       }
     }
     // Since the last one should be the first as the first ...
@@ -55,21 +54,21 @@ class AAPolygon {
   // Creates it from the positions of the corners
   // This always assumes, that the smaller if the x and y distance
   // between 2 corners is 0.
-  public static function createFromCornerPositions(pos : Array<Pair<Float, Float>>) {
-    var result = new AAPolygon(pos[pos.length-1].a, pos[pos.length-1].b);
+  public static function createFromCornerPositions(pos : Array<Point>) {
+    var result = new AAPolygon(pos[pos.length-1].x, pos[pos.length-1].y);
     var last = pos[pos.length-1];
     for (corner in pos) {
-      if (Math.abs(corner.a - last.a) > Math.abs(corner.b - last.b)) {
-        if (corner.a > last.a) {
-          result.sides.push(RIGHT(corner.a-last.a));
+      if (Math.abs(corner.x - last.x) > Math.abs(corner.y - last.y)) {
+        if (corner.x > last.x) {
+          result.sides.push(RIGHT(corner.x-last.x));
         } else {
-          result.sides.push(LEFT(last.a-corner.a));
+          result.sides.push(LEFT(last.x-corner.x));
         }
       } else {
-        if (corner.b > last.b) {
-          result.sides.push(DOWN(corner.b-last.b));
+        if (corner.y > last.y) {
+          result.sides.push(DOWN(corner.y-last.y));
         } else {
-          result.sides.push(UP(last.b-corner.b));
+          result.sides.push(UP(last.y-corner.y));
         }
       }
       last = corner;
@@ -84,8 +83,8 @@ class AAPolygon {
     var insetCorners = [];
     var lastDir = sides[sides.length-1];
     for (i in 0...corners.length) {
-      var x = corners[i].a;
-      var y = corners[i].b;
+      var x = corners[i].x;
+      var y = corners[i].y;
       var dir = sides[i];
       // Inset given by last dir ...
       switch(lastDir) {
@@ -104,7 +103,7 @@ class AAPolygon {
         }
       }
 
-      insetCorners.push(new Pair(x,y));
+      insetCorners.push(new Point(x,y));
       lastDir = dir;
     }
     // Convert back to AAPolygon...
