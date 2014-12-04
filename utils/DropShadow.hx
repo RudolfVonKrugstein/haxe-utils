@@ -232,6 +232,23 @@ class DropShadow {
         // Draw it up!
         drawSideShadow(new Rectangle(nextPos_x + endRed, nextPos_y-softSize, curPos_x - nextPos_x - totalRed, softSize),-Math.PI/2.0);
       }
+      // Draw the next corner shadow
+      var drawPos_x = nextPos_x;
+      var drawPos_y = nextPos_y;
+      
+      switch(curSide) {
+      case UP(dist):
+      case RIGHT(dist):
+      case DOWN(dist): drawPos_x = nextPos_x - softSize;
+      case LEFT(dist): drawPos_y = nextPos_y - softSize;
+      }
+      switch(nextSide) {
+      case UP(dist):
+      case RIGHT(dist):
+      case DOWN(dist): drawPos_x = nextPos_x - softSize;
+      case LEFT(dist): drawPos_y = nextPos_y - softSize;
+      }
+      drawCornerShadow(new Point(drawPos_x, drawPos_y), new Point(nextPos_x, nextPos_y));
 
       // Update current pos
       curPos_x = nextPos_x;
