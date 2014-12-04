@@ -55,9 +55,10 @@ class AAPolygon {
   // This always assumes, that the smaller if the x and y distance
   // between 2 corners is 0.
   public static function createFromCornerPositions(pos : Array<Point>) {
-    var result = new AAPolygon(pos[pos.length-1].x, pos[pos.length-1].y);
-    var last = pos[pos.length-1];
-    for (corner in pos) {
+    var result = new AAPolygon(pos[0].x, pos[0].y);
+    for (i in 0...pos.length) {
+      var last = pos[i];
+      var corner = pos[(i + 1) % pos.length];
       if (Math.abs(corner.x - last.x) > Math.abs(corner.y - last.y)) {
         if (corner.x > last.x) {
           result.sides.push(RIGHT(corner.x-last.x));
@@ -89,17 +90,17 @@ class AAPolygon {
       // Inset given by last dir ...
       switch(lastDir) {
       case UP(_):    x -= amount;
-      case RIGHT(_): y += amount;
+      case RIGHT(_): y -= amount;
       case DOWN(_):  x += amount;
-      case LEFT(_):  y -= amount;
+      case LEFT(_):  y += amount;
       }
       // Do inset by current dir, only of it differs to the lastDir
       if (Type.enumIndex(lastDir) != Type.enumIndex(dir)) {
         switch(dir) {
         case UP(_):    x -= amount;
-        case RIGHT(_): y += amount;
+        case RIGHT(_): y -= amount;
         case DOWN(_):  x += amount;
-        case LEFT(_):  y -= amount;
+        case LEFT(_):  y += amount;
         }
       }
 
