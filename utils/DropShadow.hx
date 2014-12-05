@@ -250,8 +250,8 @@ class DropShadow {
     function drawSideShadow(curPos : Point, nextPos : Point, lastSide : AADirectionStep, curSide : AADirectionStep, nextSide : AADirectionStep) {
 
       // Get the reduction of the side shadow due to inner corners
-      var startRed : Float = innerCorner(lastSide,curSide) ? softSize : 0.0;
-      var endRed : Float = innerCorner(curSide,nextSide) ? softSize : 0.0;
+      var startRed : Float = (innerCorner(lastSide,curSide) ? softSize : 0.0);
+      var endRed : Float   = (innerCorner(curSide,nextSide) ? softSize : 0.0);
       var totalRed = startRed + endRed;
       //Calculate the drawing rect and rotation
       var drawRect : Rectangle = null;
