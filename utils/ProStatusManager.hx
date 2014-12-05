@@ -50,7 +50,6 @@ class ProStatusManager {
     } else {
       iapManager.purchase(proStatusItem).handle(function(r) {
         if (r) {
-          trace(r);
           setProStatus(true);
           res.trigger(Success(r));
         }
