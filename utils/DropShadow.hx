@@ -284,7 +284,7 @@ class DropShadow {
       graphics.endFill();
     }
 
-    var curPos = new Point(polygon.x_start, polygon.y_start);
+    var curPos = new Point(innerPolygon.x_start, innerPolygon.y_start);
     for (i in 0...innerPolygon.sides.length) {
       var lastSide = innerPolygon.sides[(i-1 + innerPolygon.sides.length) % innerPolygon.sides.length];
       var curSide = innerPolygon.sides[(i) % innerPolygon.sides.length];
