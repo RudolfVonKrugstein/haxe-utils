@@ -256,21 +256,19 @@ class DropShadow {
       graphics.endFill();
     }
 
-    var curPos_x : Float = polygon.x_start;
-    var curPos_y : Float = polygon.y_start;
+    var curPos = new Point(polygon.x_start, polygon.y_start);
     for (i in 0...innerPolygon.sides.length) {
       var lastSide = innerPolygon.sides[(i-1 + innerPolygon.sides.length) % innerPolygon.sides.length];
       var curSide = innerPolygon.sides[(i) % innerPolygon.sides.length];
       var nextSide = innerPolygon.sides[(i+1) % innerPolygon.sides.length];
 
       // Calculate the next position
-      var nextPos_x = curPos_x;
-      var nextPos_y = curPos_y;
+      var nextPos = new Point(curPos.x, curPos.y);
       switch(curSide.dir) {
-      case UP: nextPos_y -= curSide.dist;
-      case RIGHT: nextPos_x += curSide.dist;
-      case DOWN: nextPos_y += curSide.dist;
-      case LEFT: nextPos_x -= curSide.dist;
+      case UP: nextPos.y -= curSide.dist;
+      case RIGHT: nextPos.x += curSide.dist;
+      case DOWN: nextPos.y += curSide.dist;
+      case LEFT: nextPos.x -= curSide.dist;
       }
       // Get the reduction of the side shadow due to inner corners
       var startRed : Float = innerCorner(lastSide,curSide) ? softSize : 0.0;
@@ -280,23 +278,23 @@ class DropShadow {
       switch(curSide.dir) {
       case UP:
         // Draw it to the right!
-        drawSideShadow(new Rectangle(curPos_x, nextPos_y + endRed, softSize, curPos_y - nextPos_y - totalRed),0.0);
+        drawSideShadow(new Rectangle(curPos.x, nextPos.y + endRed, softSize, curPos.y - nextPos.y - totalRed),0.0);
       case RIGHT:
         // Draw it down!
-        drawSideShadow(new Rectangle(curPos_x + startRed, curPos_y, nextPos_x - curPos_x - totalRed, softSize),Math.PI/2.0);
+        drawSideShadow(new Rectangle(curPos.x + startRed, curPos.y, nextPos.x - curPos.x - totalRed, softSize),Math.PI/2.0);
       case DOWN:
         // Draw it to the left!
-        drawSideShadow(new Rectangle(curPos_x-softSize, curPos_y + startRed, softSize, nextPos_y - curPos_y - totalRed),Math.PI);
+        drawSideShadow(new Rectangle(curPos.x-softSize, curPos.y + startRed, softSize, nextPos.y - curPos.y - totalRed),Math.PI);
       case LEFT:
         // Draw it up!
-        drawSideShadow(new Rectangle(nextPos_x + endRed, nextPos_y-softSize, curPos_x - nextPos_x - totalRed, softSize),-Math.PI/2.0);
+        drawSideShadow(new Rectangle(nextPos.x + endRed, nextPos.y-softSize, curPos.x - nextPos.x - totalRed, softSize),-Math.PI/2.0);
       }
       // Draw the next corner shadow
-      drawCornerShadow(new Point(nextPos_x, nextPos_y), curSide, nextSide);
+      drawCornerShadow(new Point(nextPos.x, nextPos.y), curSide, nextSide);
 
       // Update current pos
-      curPos_x = nextPos_x;
-      curPos_y = nextPos_y;
+      curPos.x = nextPos.x;
+      curPos.y = nextPos.y;
     }
     /*
     // Top, left gradient
