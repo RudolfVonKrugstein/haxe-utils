@@ -248,7 +248,35 @@ class DropShadow {
       graphics.drawRect(drawPos.x, drawPos.y, radius, radius);
       graphics.endFill();
     }
-    function drawSideShadow(drawRect : Rectangle, rotation : Float) {
+    function drawSideShadow(curPos : Point, nextPos : Point, lastSide : AADirectionStep, curSide : AADirectionStep, nextSide : AADirectionStep) {
+
+      // Get the reduction of the side shadow due to inner corners
+      var startRed : Float = innerCorner(lastSide,curSide) ? softSize : 0.0;
+      var endRed : Float = innerCorner(curSide,nextSide) ? softSize : 0.0;
+      var totalRed = startRed + endRed;
+      //Calculate the drawing rect and rotation
+      var drawRect : Rectangle = null;
+      var rotation : Float = 0.0;
+      switch(curSide.dir) {
+      case UP:
+        // Draw it to the right!
+        drawRect = new Rectangle(curPos.x, nextPos.y + endRed, softSize, curPos.y - nextPos.y - totalRed);
+        rotation = 0.0;
+      case RIGHT:
+        // Draw it down!
+        drawRect = new Rectangle(curPos.x + startRed, curPos.y, nextPos.x - curPos.x - totalRed, softSize);
+        rotation = Math.PI/2.0;
+      case DOWN:
+        // Draw it to the left!
+        drawRect = new Rectangle(curPos.x-softSize, curPos.y + startRed, softSize, nextPos.y - curPos.y - totalRed);
+        rotation = Math.PI;
+      case LEFT:
+        // Draw it up!
+        drawRect = new Rectangle(nextPos.x + endRed, nextPos.y-softSize, curPos.x - nextPos.x - totalRed, softSize);
+        rotation = -Math.PI/2.0;
+      }
+
+
       var matrix = new flash.geom.Matrix();
       matrix.createGradientBox(drawRect.width, drawRect.height, rotation, drawRect.left, drawRect.top);
       graphics.beginGradientFill(flash.display.GradientType.LINEAR, colors, alphas, fractions, matrix);
@@ -270,32 +298,9 @@ class DropShadow {
       case DOWN: nextPos.y += curSide.dist;
       case LEFT: nextPos.x -= curSide.dist;
       }
-      // Get the reduction of the side shadow due to inner corners
-      var startRed : Float = innerCorner(lastSide,curSide) ? softSize : 0.0;
-      var endRed : Float = innerCorner(curSide,nextSide) ? softSize : 0.0;
-      var totalRed = startRed + endRed;
-      //Draw the side shadow
-      var rect : Rectangle = null;
-      var rotation : Float = 0.0;
-      switch(curSide.dir) {
-      case UP:
-        // Draw it to the right!
-        rect = new Rectangle(curPos.x, nextPos.y + endRed, softSize, curPos.y - nextPos.y - totalRed);
-        rotation = 0.0;
-      case RIGHT:
-        // Draw it down!
-        rect = new Rectangle(curPos.x + startRed, curPos.y, nextPos.x - curPos.x - totalRed, softSize);
-        rotation = Math.PI/2.0;
-      case DOWN:
-        // Draw it to the left!
-        rect = new Rectangle(curPos.x-softSize, curPos.y + startRed, softSize, nextPos.y - curPos.y - totalRed);
-        rotation = Math.PI;
-      case LEFT:
-        // Draw it up!
-        rect = new Rectangle(nextPos.x + endRed, nextPos.y-softSize, curPos.x - nextPos.x - totalRed, softSize);
-        rotation = -Math.PI/2.0;
-      }
-      drawSideShadow(rect, rotation);
+
+      // Draw the side shadow
+      drawSideShadow(curPos, nextPos, lastSide, curSide, nextSide);
 
       // Draw the next corner shadow
       drawCornerShadow(new Point(nextPos.x, nextPos.y), curSide, nextSide);
