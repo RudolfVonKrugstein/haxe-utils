@@ -3,12 +3,21 @@ package utils;
 import flash.geom.Rectangle;
 import flash.geom.Point;
 
+enum AADirection {
+  UP;
+  RIGHT;
+  DOWN;
+  LEFT;
+}
+
 // A step in a direction
-enum AADirectionStep {
-  UP(dist : Float);
-  RIGHT(dist : Float);
-  DOWN(dist : Float);
-  LEFT(dist : Float);
+class AADirectionStep {
+  public function new(dir : AADirection, dist : Float) {
+    this.dir = dir;
+    this.dist = dist;
+  }
+  public var dir : AADirection;
+  public var dist : Float;
 }
 
 // An axis aligned polygon
@@ -32,11 +41,11 @@ class AAPolygon {
   public function reverse() {
     sides.reverse();
     for (i in 0...sides.length) {
-      switch(sides[i]) {
-      case UP(d):    sides[i] = DOWN(d);
-      case RIGHT(d): sides[i] = LEFT(d);
-      case DOWN(d):  sides[i] = UP(d);
-      case LEFT(d):  sides[i] = RIGHT(d);
+      switch(sides[i].dir) {
+      case UP:    sides[i].dir = DOWN;
+      case RIGHT: sides[i].dir = LEFT;
+      case DOWN:  sides[i].dir = UP;
+      case LEFT:  sides[i].dir = RIGHT;
       }
     }
   }
@@ -47,15 +56,15 @@ class AAPolygon {
     result.push(new Point(x_start, y_start));
     for (side in sides) {
       var last = result[result.length-1];
-      switch(side) {
-      case UP(dist):
-        result.push(new Point(last.x, last.y - dist));
-      case RIGHT(dist):
-        result.push(new Point(last.x + dist, last.y));
-      case DOWN(dist):
-        result.push(new Point(last.x, last.y + dist));
-      case LEFT(dist):
-        result.push(new Point(last.x - dist, last.y));
+      switch(side.dir) {
+      case UP:
+        result.push(new Point(last.x, last.y - side.dist));
+      case RIGHT:
+        result.push(new Point(last.x + side.dist, last.y));
+      case DOWN:
+        result.push(new Point(last.x, last.y + side.dist));
+      case LEFT:
+        result.push(new Point(last.x - side.dist, last.y));
       }
     }
     // Since the last one should be the first as the first ...
@@ -73,15 +82,15 @@ class AAPolygon {
       var corner = pos[(i + 1) % pos.length];
       if (Math.abs(corner.x - last.x) > Math.abs(corner.y - last.y)) {
         if (corner.x > last.x) {
-          result.sides.push(RIGHT(corner.x-last.x));
+          result.sides.push(new AADirectionStep(RIGHT,corner.x-last.x));
         } else {
-          result.sides.push(LEFT(last.x-corner.x));
+          result.sides.push(new AADirectionStep(LEFT,last.x-corner.x));
         }
       } else {
         if (corner.y > last.y) {
-          result.sides.push(DOWN(corner.y-last.y));
+          result.sides.push(new AADirectionStep(DOWN,corner.y-last.y));
         } else {
-          result.sides.push(UP(last.y-corner.y));
+          result.sides.push(new AADirectionStep(UP,last.y-corner.y));
         }
       }
       last = corner;
@@ -94,30 +103,29 @@ class AAPolygon {
     // Create a corner version, that will be inset
     var corners = createCornerPositions();
     var insetCorners = [];
-    var lastDir = sides[sides.length-1];
     for (i in 0...corners.length) {
       var x = corners[i].x;
       var y = corners[i].y;
-      var dir = sides[i];
+      var dir = sides[i].dir;
+      var lastDir = sides[(i + sides.length-1) % sides.length].dir;
       // Inset given by last dir ...
       switch(lastDir) {
-      case UP(_):    x -= amount;
-      case RIGHT(_): y -= amount;
-      case DOWN(_):  x += amount;
-      case LEFT(_):  y += amount;
+      case UP:    x -= amount;
+      case RIGHT: y -= amount;
+      case DOWN:  x += amount;
+      case LEFT:  y += amount;
       }
       // Do inset by current dir, only of it differs to the lastDir
-      if (Type.enumIndex(lastDir) != Type.enumIndex(dir)) {
+      if (lastDir != dir) {
         switch(dir) {
-        case UP(_):    x -= amount;
-        case RIGHT(_): y -= amount;
-        case DOWN(_):  x += amount;
-        case LEFT(_):  y += amount;
+        case UP:    x -= amount;
+        case RIGHT: y -= amount;
+        case DOWN:  x += amount;
+        case LEFT:  y += amount;
         }
       }
 
       insetCorners.push(new Point(x,y));
-      lastDir = dir;
     }
     // Convert back to AAPolygon...
     return createFromCornerPositions(insetCorners);
@@ -130,10 +138,10 @@ class DropShadow {
   public var rect(null,set) : Rectangle;
   private function set_rect(r : Rectangle) : Rectangle {
     polygon = new AAPolygon(r.left, r.top);
-    polygon.sides.push(DOWN(r.height));
-    polygon.sides.push(RIGHT(r.width));
-    polygon.sides.push(UP(r.height));
-    polygon.sides.push(LEFT(r.width));
+    polygon.sides.push(new AADirectionStep(DOWN,r.height));
+    polygon.sides.push(new AADirectionStep(RIGHT,r.width));
+    polygon.sides.push(new AADirectionStep(UP,r.height));
+    polygon.sides.push(new AADirectionStep(LEFT,r.width));
     return r;
   }
   public var xOffset : Float = 0.0;
@@ -178,26 +186,19 @@ class DropShadow {
     // Returns if 2 adjacent sides form an inner corner
     // It depends on wether this is an inner shaow ...
     function innerCorner(side1 : AADirectionStep, side2 : AADirectionStep) {
-      var res : Bool = false;
-      var side1i = Type.enumIndex(side1);
-      var side2i = Type.enumIndex(side2);
-      var righti = Type.enumIndex(RIGHT(0.0));
-      var lefti = Type.enumIndex(LEFT(0.0));
-      var upi = Type.enumIndex(UP(0.0));
-      var downi = Type.enumIndex(DOWN(0.0));
-      if (side1i == righti && side2i == downi) {
-        res = true;
+      if (side1.dir == RIGHT && side2.dir == DOWN) {
+        return true;
       }
-      if (side1i == downi && side2i == lefti) {
-        res = true;
+      if (side1.dir == DOWN && side2.dir == LEFT) {
+        return true;
       }
-      if (side1i == lefti && side2i == upi) {
-        res = true;
+      if (side1.dir == LEFT && side2.dir == UP) {
+        return true;
       }
-      if (side1i == upi && side2i == righti) {
-        res = true;
+      if (side1.dir == UP && side2.dir == RIGHT) {
+        return true;
       }
-      return res;
+      return false;
     }
 
     function drawCornerShadow(cornerPos : Point, curSide : AADirectionStep, nextSide : AADirectionStep) {
@@ -205,34 +206,34 @@ class DropShadow {
 
       // Adjust the drawPos, wich is the upper left corner of where the gradient is drawn
       var drawPos = new Point(cornerPos.x,cornerPos.y);
-      switch(curSide) {
-      case UP(dist):
-      case RIGHT(dist):
-      case DOWN(dist): drawPos.x = cornerPos.x - softSize;
-      case LEFT(dist): drawPos.y = cornerPos.y - softSize;
+      switch(curSide.dir) {
+      case UP:
+      case RIGHT:
+      case DOWN: drawPos.x = cornerPos.x - softSize;
+      case LEFT: drawPos.y = cornerPos.y - softSize;
       }
-      switch(nextSide) {
-      case UP(dist):
-      case RIGHT(dist):
-      case DOWN(dist): drawPos.x = cornerPos.x - softSize;
-      case LEFT(dist): drawPos.y = cornerPos.y - softSize;
+      switch(nextSide.dir) {
+      case UP:
+      case RIGHT:
+      case DOWN: drawPos.x = cornerPos.x - softSize;
+      case LEFT: drawPos.y = cornerPos.y - softSize;
       }
 
       var centerPos = new Point(cornerPos.x,cornerPos.y);
       // Adjust the gradient center. If this is an not innerCorner -> it is already correct. Otherwise it must be at the opposite
       // side of the drawing rectangel.
       if (innerCorner) {
-        switch(curSide) {
-        case UP(dist):
+        switch(curSide.dir) {
+        case UP:
           centerPos.x += softSize;
           centerPos.y += softSize;
-        case RIGHT(dist):
+        case RIGHT:
           centerPos.x -= softSize;
           centerPos.y += softSize;
-        case DOWN(dist):
+        case DOWN:
           centerPos.x -= softSize;
           centerPos.y -= softSize;
-        case LEFT(dist):
+        case LEFT:
           centerPos.x += softSize;
           centerPos.y -= softSize;
         }
@@ -265,33 +266,28 @@ class DropShadow {
       // Calculate the next position
       var nextPos_x = curPos_x;
       var nextPos_y = curPos_y;
-      switch(curSide) {
-      case UP(dist): nextPos_y -= dist;
-      case RIGHT(dist): nextPos_x += dist;
-      case DOWN(dist): nextPos_y += dist;
-      case LEFT(dist): nextPos_x -= dist;
+      switch(curSide.dir) {
+      case UP: nextPos_y -= curSide.dist;
+      case RIGHT: nextPos_x += curSide.dist;
+      case DOWN: nextPos_y += curSide.dist;
+      case LEFT: nextPos_x -= curSide.dist;
       }
       // Get the reduction of the side shadow due to inner corners
       var startRed : Float = innerCorner(lastSide,curSide) ? softSize : 0.0;
       var endRed : Float = innerCorner(curSide,nextSide) ? softSize : 0.0;
       var totalRed = startRed + endRed;
       //Draw the side shadow
-      trace("curSide: " + curSide);
-      trace("x: " + curPos_x);
-      trace("y: " + curPos_y);
-      trace("startRed: " + startRed);
-      trace("endRed: " + endRed);
-      switch(curSide) {
-      case UP(dist):
+      switch(curSide.dir) {
+      case UP:
         // Draw it to the right!
         drawSideShadow(new Rectangle(curPos_x, nextPos_y + endRed, softSize, curPos_y - nextPos_y - totalRed),0.0);
-      case RIGHT(dist):
+      case RIGHT:
         // Draw it down!
         drawSideShadow(new Rectangle(curPos_x + startRed, curPos_y, nextPos_x - curPos_x - totalRed, softSize),Math.PI/2.0);
-      case DOWN(dist):
+      case DOWN:
         // Draw it to the left!
         drawSideShadow(new Rectangle(curPos_x-softSize, curPos_y + startRed, softSize, nextPos_y - curPos_y - totalRed),Math.PI);
-      case LEFT(dist):
+      case LEFT:
         // Draw it up!
         drawSideShadow(new Rectangle(nextPos_x + endRed, nextPos_y-softSize, curPos_x - nextPos_x - totalRed, softSize),-Math.PI/2.0);
       }
