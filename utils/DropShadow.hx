@@ -260,19 +260,19 @@ class DropShadow {
       switch(curSide.dir) {
       case UP:
         // Draw it to the right!
-        drawRect = new Rectangle(curPos.x, nextPos.y + endRed, softSize, curPos.y - nextPos.y - totalRed);
+        drawRect = new Rectangle(curPos.x, nextPos.y + endRed, radius, curPos.y - nextPos.y - totalRed);
         rotation = 0.0;
       case RIGHT:
         // Draw it down!
-        drawRect = new Rectangle(curPos.x + startRed, curPos.y, nextPos.x - curPos.x - totalRed, softSize);
+        drawRect = new Rectangle(curPos.x + startRed, curPos.y, nextPos.x - curPos.x - totalRed, radius);
         rotation = Math.PI/2.0;
       case DOWN:
         // Draw it to the left!
-        drawRect = new Rectangle(curPos.x-softSize, curPos.y + startRed, softSize, nextPos.y - curPos.y - totalRed);
+        drawRect = new Rectangle(curPos.x-radius, curPos.y + startRed, radius, nextPos.y - curPos.y - totalRed);
         rotation = Math.PI;
       case LEFT:
         // Draw it up!
-        drawRect = new Rectangle(nextPos.x + endRed, nextPos.y-softSize, curPos.x - nextPos.x - totalRed, softSize);
+        drawRect = new Rectangle(nextPos.x + endRed, nextPos.y-radius, curPos.x - nextPos.x - totalRed, radius);
         rotation = -Math.PI/2.0;
       }
 
