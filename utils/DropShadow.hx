@@ -208,14 +208,14 @@ class DropShadow {
       switch(curSide.dir) {
       case UP:
       case RIGHT:
-      case DOWN: drawPos.x = cornerPos.x - softSize;
-      case LEFT: drawPos.y = cornerPos.y - softSize;
+      case DOWN: drawPos.x = cornerPos.x - radius;
+      case LEFT: drawPos.y = cornerPos.y - radius;
       }
       switch(nextSide.dir) {
       case UP:
       case RIGHT:
-      case DOWN: drawPos.x = cornerPos.x - softSize;
-      case LEFT: drawPos.y = cornerPos.y - softSize;
+      case DOWN: drawPos.x = cornerPos.x - radius;
+      case LEFT: drawPos.y = cornerPos.y - radius;
       }
 
       var centerPos = new Point(cornerPos.x,cornerPos.y);
@@ -224,17 +224,17 @@ class DropShadow {
       if (innerCorner) {
         switch(curSide.dir) {
         case UP:
-          centerPos.x += softSize;
-          centerPos.y += softSize;
+          centerPos.x += radius;
+          centerPos.y += radius;
         case RIGHT:
-          centerPos.x -= softSize;
-          centerPos.y += softSize;
+          centerPos.x -= radius;
+          centerPos.y += radius;
         case DOWN:
-          centerPos.x -= softSize;
-          centerPos.y -= softSize;
+          centerPos.x -= radius;
+          centerPos.y -= radius;
         case LEFT:
-          centerPos.x += softSize;
-          centerPos.y -= softSize;
+          centerPos.x += radius;
+          centerPos.y -= radius;
         }
       }
 
