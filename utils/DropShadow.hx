@@ -29,6 +29,18 @@ class AAPolygon {
     return r;
   }
 
+  public function reverse() {
+    sides.reverse();
+    for (i in 0...sides.length) {
+      switch(sides[i]) {
+      case UP(d):    sides[i] = DOWN(d);
+      case RIGHT(d): sides[i] = LEFT(d);
+      case DOWN(d):  sides[i] = UP(d);
+      case LEFT(d):  sides[i] = RIGHT(d);
+      }
+    }
+  }
+
   // Creates an array of the positions of the corners
   public function createCornerPositions() : Array<Point> {
     var result : Array<Point> = [];
@@ -137,11 +149,6 @@ class DropShadow {
   }
 
   public function draw(graphics : flash.display.Graphics) {
-    // Calculate the hard shadow polygon
-    //var innerPolygon = polygon.inset(softSize/2.0);
-    /*innerPolygon.x_start += xOffset;
-    innerPolygon.y_start += yOffset;*/
-    var innerPolygon = polygon.copy();
 
     graphics.lineStyle();
     // Draw the soft shadow
@@ -149,21 +156,94 @@ class DropShadow {
     var colors = [color,color,color];
     var radius = softSize + corners;
     var fractions = [0.0,255.0 * corners / radius,255.0];
+    // Same for inner ...
+    var innerAlphas = [0.0,alpha,alpha];
+    var innerFractions = [0.0, 255 * softSize/radius, 255.0];
 
-    /*if (innerShadow) {
-      // The shadow is drawn around hardRect, for an inner shadow we shrink hardRect by the size of the shadow
-      alphas.reverse();
-      fractions = [0.0, 255 * softSize/radius, 255.0];
-      hardRect.x += softSize;
-      hardRect.y += softSize;
-      hardRect.width -= 2 * softSize;
-      hardRect.height -= 2 * softSize;
-    }*/
+    var innerPolygon = null;
+    if (innerShadow) {
+      // Calculate the hard shadow polygon
+      // Reverse the polygon and outset it
+      innerPolygon = polygon.inset(-softSize / 2.0);
+      trace("Before: " + innerPolygon.sides);
+      innerPolygon.reverse();
+      trace("After: " + innerPolygon.sides);
+    } else {
+      // Calculate the hard shadow polygon
+      innerPolygon = polygon.inset(softSize / 2.0);
+    }
+    innerPolygon.x_start += xOffset;
+    innerPolygon.y_start += yOffset;
 
-    function drawCornerShadow(drawPos : Point, gradientCenter : Point) {
+    // Returns if 2 adjacent sides form an inner corner
+    // It depends on wether this is an inner shaow ...
+    function innerCorner(side1 : AADirectionStep, side2 : AADirectionStep) {
+      var res : Bool = false;
+      var side1i = Type.enumIndex(side1);
+      var side2i = Type.enumIndex(side2);
+      var righti = Type.enumIndex(RIGHT(0.0));
+      var lefti = Type.enumIndex(LEFT(0.0));
+      var upi = Type.enumIndex(UP(0.0));
+      var downi = Type.enumIndex(DOWN(0.0));
+      if (side1i == righti && side2i == downi) {
+        res = true;
+      }
+      if (side1i == downi && side2i == lefti) {
+        res = true;
+      }
+      if (side1i == lefti && side2i == upi) {
+        res = true;
+      }
+      if (side1i == upi && side2i == righti) {
+        res = true;
+      }
+      return res;
+    }
+
+    function drawCornerShadow(cornerPos : Point, curSide : AADirectionStep, nextSide : AADirectionStep) {
+      var innerCorner = innerCorner(curSide, nextSide);
+
+      // Adjust the drawPos, wich is the upper left corner of where the gradient is drawn
+      var drawPos = new Point(cornerPos.x,cornerPos.y);
+      switch(curSide) {
+      case UP(dist):
+      case RIGHT(dist):
+      case DOWN(dist): drawPos.x = cornerPos.x - softSize;
+      case LEFT(dist): drawPos.y = cornerPos.y - softSize;
+      }
+      switch(nextSide) {
+      case UP(dist):
+      case RIGHT(dist):
+      case DOWN(dist): drawPos.x = cornerPos.x - softSize;
+      case LEFT(dist): drawPos.y = cornerPos.y - softSize;
+      }
+
+      var centerPos = new Point(cornerPos.x,cornerPos.y);
+      // Adjust the gradient center. If this is an not innerCorner -> it is already correct. Otherwise it must be at the opposite
+      // side of the drawing rectangel.
+      if (innerCorner) {
+        switch(curSide) {
+        case UP(dist):
+          centerPos.x += softSize;
+          centerPos.y += softSize;
+        case RIGHT(dist):
+          centerPos.x -= softSize;
+          centerPos.y += softSize;
+        case DOWN(dist):
+          centerPos.x -= softSize;
+          centerPos.y -= softSize;
+        case LEFT(dist):
+          centerPos.x += softSize;
+          centerPos.y -= softSize;
+        }
+      }
+
       var matrix = new flash.geom.Matrix();
-      matrix.createGradientBox(radius * 2,radius * 2,0.0,gradientCenter.x-radius, gradientCenter.y-radius);
-      graphics.beginGradientFill(flash.display.GradientType.RADIAL, colors, alphas, fractions, matrix);
+      var f = innerCorner?innerFractions:fractions;
+      var a = innerCorner?innerAlphas:alphas;
+
+      matrix.createGradientBox(radius * 2,radius * 2,0.0,centerPos.x-radius, centerPos.y-radius);
+      graphics.beginGradientFill(flash.display.GradientType.RADIAL, colors, a, f, matrix);
       graphics.drawRect(drawPos.x, drawPos.y, radius, radius);
       graphics.endFill();
     }
@@ -175,27 +255,10 @@ class DropShadow {
       graphics.endFill();
     }
 
-    // Returns if 2 adjacent sides form an inner corner
-    function innerCorner(side1 : AADirectionStep, side2 : AADirectionStep) {
-      if (side1 == RIGHT(0.0) && side2 == DOWN(0.0)) {
-        return true;
-      }
-      if (side1 == DOWN(0.0) && side2 == LEFT(0.0)) {
-        return true;
-      }
-      if (side1 == LEFT(0.0) && side2 == UP(0.0)) {
-        return true;
-      }
-      if (side1 == UP(0.0) && side2 == RIGHT(0.0)) {
-        return true;
-      }
-      return false;
-    }
-
     var curPos_x : Float = polygon.x_start;
     var curPos_y : Float = polygon.y_start;
     for (i in 0...innerPolygon.sides.length) {
-      var lastSide = innerPolygon.sides[(i-1) % innerPolygon.sides.length];
+      var lastSide = innerPolygon.sides[(i-1 + innerPolygon.sides.length) % innerPolygon.sides.length];
       var curSide = innerPolygon.sides[(i) % innerPolygon.sides.length];
       var nextSide = innerPolygon.sides[(i+1) % innerPolygon.sides.length];
 
@@ -233,22 +296,7 @@ class DropShadow {
         drawSideShadow(new Rectangle(nextPos_x + endRed, nextPos_y-softSize, curPos_x - nextPos_x - totalRed, softSize),-Math.PI/2.0);
       }
       // Draw the next corner shadow
-      var drawPos_x = nextPos_x;
-      var drawPos_y = nextPos_y;
-      
-      switch(curSide) {
-      case UP(dist):
-      case RIGHT(dist):
-      case DOWN(dist): drawPos_x = nextPos_x - softSize;
-      case LEFT(dist): drawPos_y = nextPos_y - softSize;
-      }
-      switch(nextSide) {
-      case UP(dist):
-      case RIGHT(dist):
-      case DOWN(dist): drawPos_x = nextPos_x - softSize;
-      case LEFT(dist): drawPos_y = nextPos_y - softSize;
-      }
-      drawCornerShadow(new Point(drawPos_x, drawPos_y), new Point(nextPos_x, nextPos_y));
+      drawCornerShadow(new Point(nextPos_x, nextPos_y), curSide, nextSide);
 
       // Update current pos
       curPos_x = nextPos_x;
