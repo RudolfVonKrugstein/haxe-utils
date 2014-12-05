@@ -275,20 +275,28 @@ class DropShadow {
       var endRed : Float = innerCorner(curSide,nextSide) ? softSize : 0.0;
       var totalRed = startRed + endRed;
       //Draw the side shadow
+      var rect : Rectangle = null;
+      var rotation : Float = 0.0;
       switch(curSide.dir) {
       case UP:
         // Draw it to the right!
-        drawSideShadow(new Rectangle(curPos.x, nextPos.y + endRed, softSize, curPos.y - nextPos.y - totalRed),0.0);
+        rect = new Rectangle(curPos.x, nextPos.y + endRed, softSize, curPos.y - nextPos.y - totalRed);
+        rotation = 0.0;
       case RIGHT:
         // Draw it down!
-        drawSideShadow(new Rectangle(curPos.x + startRed, curPos.y, nextPos.x - curPos.x - totalRed, softSize),Math.PI/2.0);
+        rect = new Rectangle(curPos.x + startRed, curPos.y, nextPos.x - curPos.x - totalRed, softSize);
+        rotation = Math.PI/2.0;
       case DOWN:
         // Draw it to the left!
-        drawSideShadow(new Rectangle(curPos.x-softSize, curPos.y + startRed, softSize, nextPos.y - curPos.y - totalRed),Math.PI);
+        rect = new Rectangle(curPos.x-softSize, curPos.y + startRed, softSize, nextPos.y - curPos.y - totalRed);
+        rotation = Math.PI;
       case LEFT:
         // Draw it up!
-        drawSideShadow(new Rectangle(nextPos.x + endRed, nextPos.y-softSize, curPos.x - nextPos.x - totalRed, softSize),-Math.PI/2.0);
+        rect = new Rectangle(nextPos.x + endRed, nextPos.y-softSize, curPos.x - nextPos.x - totalRed, softSize);
+        rotation = -Math.PI/2.0;
       }
+      drawSideShadow(rect, rotation);
+
       // Draw the next corner shadow
       drawCornerShadow(new Point(nextPos.x, nextPos.y), curSide, nextSide);
 
