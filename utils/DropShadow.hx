@@ -149,6 +149,7 @@ class DropShadow {
   public var softSize : Float = 0.0;
   public var alpha : Float = 0.2;
   public var corners : Float = 0.0;
+  public var inset   : Float = 0.0;
   public var fill : Bool = false;
   public var innerShadow : Bool = false;
   public var color : UInt = 0;
@@ -172,13 +173,11 @@ class DropShadow {
     if (innerShadow) {
       // Calculate the hard shadow polygon
       // Reverse the polygon and outset it
-      innerPolygon = polygon.inset(-softSize / 2.0);
-      trace("Before: " + innerPolygon.sides);
+      innerPolygon = polygon.inset(-(corners + inset));
       innerPolygon.reverse();
-      trace("After: " + innerPolygon.sides);
     } else {
       // Calculate the hard shadow polygon
-      innerPolygon = polygon.inset(softSize / 2.0);
+      innerPolygon = polygon.inset(corners + inset);
     }
     innerPolygon.x_start += xOffset;
     innerPolygon.y_start += yOffset;
