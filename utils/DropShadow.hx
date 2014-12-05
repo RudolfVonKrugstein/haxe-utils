@@ -308,22 +308,5 @@ class DropShadow {
       curPos.x = nextPos.x;
       curPos.y = nextPos.y;
     }
-    /*
-    // Top, left gradient
-    drawCornerShadow(new flash.geom.Point(hardRect.left-softSize,hardRect.top-softSize),
-                     new flash.geom.Point(hardRect.left + corners, hardRect.top + corners)
-    );
-    // Top, right gradient
-    drawCornerShadow(new flash.geom.Point(hardRect.right-corners,hardRect.top-softSize),
-    new flash.geom.Point(hardRect.right - corners, hardRect.top + corners)
-    );
-    // Bottom, right gradient
-    drawCornerShadow(new flash.geom.Point(hardRect.right-corners,hardRect.bottom-corners),
-    new flash.geom.Point(hardRect.right-corners, hardRect.bottom - corners)
-    );
-    // Bottom, left gradient
-    drawCornerShadow(new flash.geom.Point(hardRect.left-softSize,hardRect.bottom-corners),
-    new flash.geom.Point(hardRect.left+ corners, hardRect.bottom - corners)
-    );*/
   }
 }
