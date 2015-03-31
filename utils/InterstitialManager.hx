@@ -1,6 +1,6 @@
 package utils;
 
-class OfferwallManager {
+class InterstitialManager {
   private var checkpointCounter : Int = 0;
 
   private var enabled = false;
@@ -11,15 +11,18 @@ class OfferwallManager {
     enabled = false;
   }
 
-  public function new() {
+  // Position where this will be shown
+  var position : mobilecore.MobileCore.InterstitialPosition;
+  public function new(position : mobilecore.MobileCore.InterstitialPosition = NOT_SET) {
+    this.position = position;
   }
 
-  public function offerWallCheckpoint() {
+  public function interstitialCheckpoint() {
     checkpointCounter = checkpointCounter + 1;
     if (checkpointCounter >= 10) {
       checkpointCounter = 0;
       if (enabled) {
-        mobilecore.MobileCore.showOfferWall(null, true);
+        mobilecore.MobileCore.showInterstitial(null, position);
       }
     }
   }
