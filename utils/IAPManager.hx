@@ -37,7 +37,7 @@ class IAPManager {
 
   public function initilize() : Surprise<Noise,String> {
     oneTimeEventListeners([IAPEvent.PURCHASE_INIT        => function() {initFutureTrigger.trigger(Success(Noise));},
-                           IAPEvent.PURCHASE_INIT_FAILED => function() {initFutureTrigger.trigger(Failure(Main.tongue.get("$IAP_INIT_FAILED")));}]);
+                           IAPEvent.PURCHASE_INIT_FAILED => function() {initFutureTrigger.trigger(Failure("Failed to initilize IAP"));}]);
     IAP.initialize(publicKey);
     return initFuture;
   }
@@ -45,7 +45,7 @@ class IAPManager {
   public function queryInventory (queryItemDetails:Bool = false, moreItems:Array<String> = null) : Surprise<Inventory,String> {
     var res = Future.trigger();
     oneTimeEventListeners([IAPEvent.PURCHASE_QUERY_INVENTORY_COMPLETE => function() {res.trigger(Success(IAP.inventory));},
-                                IAPEvent.PURCHASE_QUERY_INVENTORY_FAILED   => function() {res.trigger(Failure(Main.tongue.get("$IAP_QUERY_INVENTORY_FAILED")));}]);
+                                IAPEvent.PURCHASE_QUERY_INVENTORY_FAILED   => function() {res.trigger(Failure("IAP Query inventory failed"));}]);
     IAP.queryInventory(queryItemDetails, moreItems);
     return res.asFuture();
   }
