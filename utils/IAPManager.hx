@@ -9,7 +9,12 @@ import tink.core.Outcome;
 
 using tink.core.Outcome;
 
-class IAPManager {
+class IAPManager implements IIAPManager {
+  public var iapAvailable(get,null) : Bool;
+  private function get_iapAvailable() {
+      return extension.iap.IAP.available;
+  }
+
   private static function oneTimeEventListeners(eventFuncMap : Map<String,Void -> Void>) {
     var eFunc : flash.events.Event -> Void = null;
     eFunc = function(e : flash.events.Event) {

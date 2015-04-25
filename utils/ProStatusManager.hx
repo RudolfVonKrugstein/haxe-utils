@@ -10,7 +10,7 @@ class ProStatusManager {
   private var proStatusSignalTrigger : SignalTrigger<Bool>;
   public var proStatus(default,null) : Bool;
 
-  private var iapManager : IAPManager = null;
+  private var iapManager : IIAPManager = null;
   private var proStatusItem : String = null;
 
   public function new () {
@@ -18,9 +18,15 @@ class ProStatusManager {
     proStatusSignal = proStatusSignalTrigger.asSignal();
   }
 
-  public function initilize(iapManager : IAPManager, proStatusItem : String) {
+  public function initilize(iapManager : IIAPManager, proStatusItem : String) {
     this.iapManager = iapManager;
     this.proStatusItem = proStatusItem;
+    // A zero iapManager means, it is always purchased
+    if (iapManager == null) {
+      proStatus = true;
+      return;
+    }
+
     // Get the local storage of the pro status ...
     var so : flash.net.SharedObject = flash.net.SharedObject.getLocal("proStatus");
     if (so.data.proEnabled == null) {
@@ -45,15 +51,19 @@ class ProStatusManager {
 
   public function purchaseProStatus() : Surprise<Bool,String> {
     var res = Future.trigger();
-    if (!extension.iap.IAP.available) {
-      res.trigger(Failure("$IAP_NOT_AVAILABLE"));
+    if (iapManager == null) {
+      res.trigger(Success(true));
     } else {
-      iapManager.purchase(proStatusItem).handle(function(r) {
-        if (r) {
-          setProStatus(true);
-          res.trigger(Success(r));
-        }
-      });
+      if (!iapManager.iapAvailable) {
+        res.trigger(Failure("IAP not available"));
+      } else {
+        iapManager.purchase(proStatusItem).handle(function(r) {
+       	  if (r) {
+	    setProStatus(true);
+	    res.trigger(Success(r));
+	  }
+        });
+      }
     }
     return res.asFuture();
   }
